@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,6 +15,13 @@ app.add_middleware(
 class SentimentRequest(BaseModel):
     sentences: list[str]
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
+@app.post("/")
+async def root_post():
+    return {"status": "ok"}
 
 def classify(sentence: str) -> str:
     text = sentence.lower()
@@ -23,17 +29,13 @@ def classify(sentence: str) -> str:
     happy_words = [
         "love", "great", "awesome", "happy",
         "excellent", "good", "wonderful",
-        "fantastic", "amazing", "like",
-        "best", "enjoy", "perfect", "nice",
-        "brilliant", "outstanding", "positive"
+        "fantastic", "amazing", "like", "best"
     ]
 
     sad_words = [
         "sad", "hate", "terrible", "awful",
         "bad", "horrible", "worst",
-        "angry", "upset", "disappointed",
-        "poor", "dislike", "boring",
-        "negative", "unhappy", "frustrating"
+        "angry", "upset", "disappointed"
     ]
 
     if any(word in text for word in happy_words):
@@ -43,12 +45,6 @@ def classify(sentence: str) -> str:
         return "sad"
 
     return "neutral"
-
-
-@app.get("/")
-async def root():
-    return {"message": "Sentiment API is running"}
-
 
 @app.post("/sentiment")
 async def sentiment(data: SentimentRequest):
