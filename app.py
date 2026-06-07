@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,13 +16,6 @@ app.add_middleware(
 class SentimentRequest(BaseModel):
     sentences: list[str]
 
-@app.get("/")
-async def root():
-    return {"status": "ok"}
-
-@app.post("/")
-async def root_post():
-    return {"status": "ok"}
 
 def classify(sentence: str) -> str:
     text = sentence.lower()
@@ -29,13 +23,15 @@ def classify(sentence: str) -> str:
     happy_words = [
         "love", "great", "awesome", "happy",
         "excellent", "good", "wonderful",
-        "fantastic", "amazing", "like", "best"
+        "fantastic", "amazing", "like",
+        "best", "nice", "perfect", "enjoy"
     ]
 
     sad_words = [
         "sad", "hate", "terrible", "awful",
         "bad", "horrible", "worst",
-        "angry", "upset", "disappointed"
+        "angry", "upset", "disappointed",
+        "poor", "boring", "annoying"
     ]
 
     if any(word in text for word in happy_words):
@@ -46,6 +42,14 @@ def classify(sentence: str) -> str:
 
     return "neutral"
 
+
+@app.get("/")
+async def health_check():
+    return {"status": "ok"}
+
+
+# Support BOTH endpoints
+@app.post("/")
 @app.post("/sentiment")
 async def sentiment(data: SentimentRequest):
     return {
@@ -57,3 +61,8 @@ async def sentiment(data: SentimentRequest):
             for sentence in data.sentences
         ]
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
